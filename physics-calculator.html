@@ -1,0 +1,822 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Physics Calculator — Kinematics, Forces & Energy</title>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500&family=DM+Mono&display=swap" rel="stylesheet">
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --accent: #185FA5;
+      --accent-light: #E6F1FB;
+      --accent-text: #0C447C;
+      --accent-border: #B5D4F4;
+      --bg: #f8f7f4;
+      --surface: #ffffff;
+      --surface2: #f1efe8;
+      --border: rgba(0,0,0,0.1);
+      --border-med: rgba(0,0,0,0.18);
+      --text: #1a1a18;
+      --text-muted: #6b6b66;
+      --green-bg: #EAF3DE;
+      --green-text: #27500A;
+      --coral-bg: #FAECE7;
+      --coral-text: #993C1D;
+      --radius: 10px;
+      --radius-lg: 14px;
+    }
+
+    body {
+      font-family: 'DM Sans', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      padding: 0;
+    }
+
+    header {
+      background: var(--surface);
+      border-bottom: 0.5px solid var(--border);
+      padding: 1.25rem 2rem;
+      display: flex;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .logo {
+      width: 36px; height: 36px;
+      background: var(--accent-light);
+      border-radius: 10px;
+      display: flex; align-items: center; justify-content: center;
+    }
+
+    .logo svg { width: 20px; height: 20px; }
+
+    header h1 {
+      font-size: 18px;
+      font-weight: 500;
+      color: var(--text);
+    }
+
+    header p {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-top: 1px;
+    }
+
+    .main {
+      max-width: 860px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 6px;
+      margin-bottom: 1.75rem;
+      flex-wrap: wrap;
+    }
+
+    .tab {
+      padding: 8px 20px;
+      border-radius: 20px;
+      border: 0.5px solid var(--border-med);
+      background: transparent;
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s ease;
+    }
+
+    .tab:hover { background: var(--surface2); color: var(--text); }
+
+    .tab.active {
+      background: var(--accent-light);
+      border-color: var(--accent-border);
+      color: var(--accent-text);
+      font-weight: 500;
+    }
+
+    .section { display: none; }
+    .section.active { display: block; }
+
+    .formula-card {
+      background: var(--surface2);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .formula-card h3 {
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--text);
+      margin-bottom: 10px;
+    }
+
+    .formula-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+
+    @media (max-width: 520px) {
+      .formula-grid { grid-template-columns: 1fr; }
+      .field-row { grid-template-columns: 1fr; }
+    }
+
+    .formula-display {
+      font-family: 'DM Mono', monospace;
+      font-size: 17px;
+      font-weight: 500;
+      color: var(--accent-text);
+      background: var(--accent-light);
+      border-radius: var(--radius);
+      padding: 10px 14px;
+      letter-spacing: 0.02em;
+    }
+
+    .formula-desc {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 4px;
+      line-height: 1.5;
+    }
+
+    .var-table {
+      width: 100%;
+      border-collapse: collapse;
+      font-size: 13px;
+      margin-top: 12px;
+    }
+
+    .var-table th {
+      text-align: left;
+      padding: 6px 10px;
+      font-weight: 500;
+      color: var(--text-muted);
+      border-bottom: 0.5px solid var(--border);
+    }
+
+    .var-table td {
+      padding: 6px 10px;
+      border-bottom: 0.5px solid var(--border);
+      color: var(--text);
+    }
+
+    .var-table tr:last-child td { border-bottom: none; }
+
+    .sym {
+      font-family: 'DM Mono', monospace;
+      color: var(--accent-text);
+    }
+
+    .calc-box {
+      background: var(--surface);
+      border: 0.5px solid var(--border);
+      border-radius: var(--radius-lg);
+      padding: 1.25rem 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .calc-box h3 {
+      font-size: 15px;
+      font-weight: 500;
+      margin-bottom: 1rem;
+      color: var(--text);
+    }
+
+    .field-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      margin-bottom: 10px;
+    }
+
+    .field {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .field label {
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+
+    .field input, .field select {
+      padding: 8px 12px;
+      border-radius: var(--radius);
+      border: 0.5px solid var(--border-med);
+      background: var(--surface2);
+      color: var(--text);
+      font-size: 14px;
+      font-family: 'DM Sans', sans-serif;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+
+    .field input:focus, .field select:focus {
+      border-color: var(--accent-border);
+      box-shadow: 0 0 0 3px rgba(24,95,165,0.08);
+    }
+
+    .calc-btn {
+      background: var(--accent-light);
+      border: 0.5px solid var(--accent-border);
+      color: var(--accent-text);
+      padding: 9px 20px;
+      border-radius: var(--radius);
+      font-size: 14px;
+      font-weight: 500;
+      font-family: 'DM Sans', sans-serif;
+      cursor: pointer;
+      margin-top: 6px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .calc-btn:hover { opacity: 0.85; }
+    .calc-btn:active { transform: scale(0.98); }
+
+    .result-box {
+      margin-top: 12px;
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      background: var(--accent-light);
+      border: 0.5px solid var(--accent-border);
+      display: none;
+    }
+
+    .result-box.show { display: block; }
+
+    .result-val {
+      font-size: 20px;
+      font-weight: 500;
+      color: var(--accent-text);
+      margin-bottom: 6px;
+    }
+
+    .result-step {
+      font-size: 12px;
+      color: var(--text-muted);
+      line-height: 1.7;
+      font-family: 'DM Mono', monospace;
+      white-space: pre-wrap;
+    }
+
+    .slider-row {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .slider-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      min-width: 130px;
+    }
+
+    .slider-row input[type=range] {
+      flex: 1;
+      accent-color: var(--accent);
+      height: 4px;
+    }
+
+    .slider-val {
+      font-size: 13px;
+      font-weight: 500;
+      min-width: 64px;
+      text-align: right;
+      color: var(--text);
+    }
+
+    canvas {
+      width: 100%;
+      border-radius: var(--radius);
+      display: block;
+    }
+
+    .stat-row {
+      display: flex;
+      gap: 20px;
+      margin-top: 10px;
+      flex-wrap: wrap;
+    }
+
+    .stat-row span {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .stat-row strong {
+      color: var(--text);
+    }
+
+    .law-item {
+      display: flex;
+      gap: 12px;
+      align-items: flex-start;
+      margin-bottom: 10px;
+    }
+
+    .law-num {
+      width: 30px; height: 30px;
+      background: var(--accent-light);
+      border-radius: 50%;
+      display: flex; align-items: center; justify-content: center;
+      font-size: 13px;
+      font-weight: 500;
+      color: var(--accent-text);
+      flex-shrink: 0;
+      margin-top: 1px;
+    }
+
+    .law-text {
+      font-size: 14px;
+      color: var(--text);
+      line-height: 1.6;
+      padding-top: 4px;
+    }
+
+    .energy-legend {
+      display: flex;
+      gap: 16px;
+      margin-top: 10px;
+    }
+
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+
+    .legend-dot {
+      width: 10px; height: 10px;
+      border-radius: 50%;
+    }
+
+    .result-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6px;
+      font-size: 13px;
+      color: var(--accent-text);
+    }
+
+    .result-grid .label { font-weight: 400; color: var(--accent-text); }
+    .result-grid .value { font-weight: 500; }
+    .result-formula { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text-muted); margin-top: 8px; line-height: 1.7; }
+  </style>
+</head>
+<body>
+
+<header>
+  <div class="logo">
+    <svg viewBox="0 0 20 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="10" cy="10" r="3" fill="#185FA5"/>
+      <path d="M10 2v3M10 15v3M2 10h3M15 10h3" stroke="#185FA5" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M4.2 4.2l2.1 2.1M13.7 13.7l2.1 2.1M4.2 15.8l2.1-2.1M13.7 6.3l2.1-2.1" stroke="#B5D4F4" stroke-width="1.5" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div>
+    <h1>Physics Calculator</h1>
+    <p>Kinematics · Forces · Energy</p>
+  </div>
+</header>
+
+<div class="main">
+  <div class="tabs">
+    <button class="tab active" onclick="showTab('kinematics', this)">Kinematics & Motion</button>
+    <button class="tab" onclick="showTab('forces', this)">Forces & Newton's Laws</button>
+    <button class="tab" onclick="showTab('energy', this)">Energy & Work</button>
+  </div>
+
+  <!-- KINEMATICS -->
+  <div class="section active" id="kinematics">
+    <div class="formula-card">
+      <h3>Core kinematic equations</h3>
+      <div class="formula-grid">
+        <div><div class="formula-display">v = v₀ + at</div></div>
+        <div><div class="formula-display">x = v₀t + ½at²</div></div>
+        <div><div class="formula-display">v² = v₀² + 2ax</div></div>
+        <div><div class="formula-display">x = ½(v + v₀)t</div></div>
+      </div>
+      <table class="var-table">
+        <tr><th>Symbol</th><th>Meaning</th><th>Unit</th></tr>
+        <tr><td class="sym">v₀</td><td>Initial velocity</td><td>m/s</td></tr>
+        <tr><td class="sym">v</td><td>Final velocity</td><td>m/s</td></tr>
+        <tr><td class="sym">a</td><td>Acceleration</td><td>m/s²</td></tr>
+        <tr><td class="sym">t</td><td>Time</td><td>s</td></tr>
+        <tr><td class="sym">x</td><td>Displacement</td><td>m</td></tr>
+      </table>
+    </div>
+
+    <div class="calc-box">
+      <h3>Calculate final velocity & displacement</h3>
+      <div class="field-row">
+        <div class="field"><label>Initial velocity v₀ (m/s)</label><input type="number" id="k_v0" value="0" placeholder="e.g. 0"></div>
+        <div class="field"><label>Acceleration a (m/s²)</label><input type="number" id="k_a" value="9.8" placeholder="e.g. 9.8"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Time t (s)</label><input type="number" id="k_t" value="5" placeholder="e.g. 5"></div>
+      </div>
+      <button class="calc-btn" onclick="calcKinematics()">Calculate →</button>
+      <div class="result-box" id="k_result">
+        <div class="result-val" id="k_result_val"></div>
+        <div class="result-step" id="k_result_step"></div>
+      </div>
+    </div>
+
+    <div class="calc-box">
+      <h3>Projectile motion visualizer</h3>
+      <div class="slider-row">
+        <span class="slider-label">Launch speed (m/s)</span>
+        <input type="range" min="5" max="50" value="20" id="proj_v" step="1" oninput="drawProjectile()">
+        <span class="slider-val" id="proj_v_out">20 m/s</span>
+      </div>
+      <div class="slider-row">
+        <span class="slider-label">Angle (°)</span>
+        <input type="range" min="5" max="85" value="45" id="proj_angle" step="1" oninput="drawProjectile()">
+        <span class="slider-val" id="proj_angle_out">45°</span>
+      </div>
+      <canvas id="proj_canvas" height="200"></canvas>
+      <div class="stat-row">
+        <span>Range: <strong id="proj_range">—</strong></span>
+        <span>Max height: <strong id="proj_height">—</strong></span>
+        <span>Flight time: <strong id="proj_time">—</strong></span>
+      </div>
+    </div>
+  </div>
+
+  <!-- FORCES -->
+  <div class="section" id="forces">
+    <div class="formula-card">
+      <h3>Newton's laws</h3>
+      <div class="law-item">
+        <div class="law-num">1</div>
+        <div class="law-text">An object at rest stays at rest; an object in motion stays in motion — unless acted on by a net external force.</div>
+      </div>
+      <div class="law-item">
+        <div class="law-num">2</div>
+        <div style="padding-top:2px;"><div class="formula-display" style="font-size:20px;display:inline-block;">F = ma</div></div>
+      </div>
+      <div class="law-item">
+        <div class="law-num">3</div>
+        <div class="law-text">Every action has an equal and opposite reaction.</div>
+      </div>
+      <table class="var-table" style="margin-top:14px;">
+        <tr><th>Symbol</th><th>Meaning</th><th>Unit</th></tr>
+        <tr><td class="sym">F</td><td>Net force</td><td>N (Newtons)</td></tr>
+        <tr><td class="sym">m</td><td>Mass</td><td>kg</td></tr>
+        <tr><td class="sym">a</td><td>Acceleration</td><td>m/s²</td></tr>
+        <tr><td class="sym">g</td><td>Gravitational acceleration</td><td>9.8 m/s²</td></tr>
+        <tr><td class="sym">μ</td><td>Coefficient of friction</td><td>dimensionless</td></tr>
+      </table>
+    </div>
+
+    <div class="calc-box">
+      <h3>Force & acceleration calculator</h3>
+      <div class="field-row">
+        <div class="field"><label>Mass (kg)</label><input type="number" id="f_mass" value="10" placeholder="kg"></div>
+        <div class="field"><label>Applied force (N)</label><input type="number" id="f_applied" value="50" placeholder="N"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Friction coefficient μ</label><input type="number" id="f_mu" value="0.3" step="0.01" placeholder="0–1"></div>
+        <div class="field"><label>Surface angle (°)</label><input type="number" id="f_angle" value="0" placeholder="0 = flat"></div>
+      </div>
+      <button class="calc-btn" onclick="calcForces()">Analyze forces →</button>
+      <div class="result-box" id="f_result">
+        <div id="f_result_lines"></div>
+      </div>
+    </div>
+
+    <div class="calc-box">
+      <h3>Free body diagram</h3>
+      <canvas id="fbd_canvas" height="220"></canvas>
+    </div>
+  </div>
+
+  <!-- ENERGY -->
+  <div class="section" id="energy">
+    <div class="formula-card">
+      <h3>Energy & work formulas</h3>
+      <div class="formula-grid">
+        <div><div class="formula-display">W = Fd·cosθ</div><div class="formula-desc">Work done by a force</div></div>
+        <div><div class="formula-display">KE = ½mv²</div><div class="formula-desc">Kinetic energy</div></div>
+        <div><div class="formula-display">PE = mgh</div><div class="formula-desc">Gravitational potential energy</div></div>
+        <div><div class="formula-display">E = KE + PE</div><div class="formula-desc">Conservation of energy</div></div>
+      </div>
+      <table class="var-table">
+        <tr><th>Symbol</th><th>Meaning</th><th>Unit</th></tr>
+        <tr><td class="sym">W</td><td>Work</td><td>J (Joules)</td></tr>
+        <tr><td class="sym">F</td><td>Force</td><td>N</td></tr>
+        <tr><td class="sym">d</td><td>Distance</td><td>m</td></tr>
+        <tr><td class="sym">θ</td><td>Angle between force & motion</td><td>°</td></tr>
+        <tr><td class="sym">KE</td><td>Kinetic energy</td><td>J</td></tr>
+        <tr><td class="sym">PE</td><td>Potential energy</td><td>J</td></tr>
+        <tr><td class="sym">h</td><td>Height</td><td>m</td></tr>
+      </table>
+    </div>
+
+    <div class="calc-box">
+      <h3>Energy calculator</h3>
+      <div class="field-row">
+        <div class="field"><label>Mass (kg)</label><input type="number" id="e_mass" value="5" placeholder="kg"></div>
+        <div class="field"><label>Velocity (m/s)</label><input type="number" id="e_vel" value="10" placeholder="m/s"></div>
+      </div>
+      <div class="field-row">
+        <div class="field"><label>Height (m)</label><input type="number" id="e_height" value="20" placeholder="m"></div>
+      </div>
+      <button class="calc-btn" onclick="calcEnergy()">Calculate energies →</button>
+      <div class="result-box" id="e_result">
+        <div id="e_result_lines"></div>
+      </div>
+    </div>
+
+    <div class="calc-box">
+      <h3>Energy breakdown</h3>
+      <canvas id="energy_canvas" height="160"></canvas>
+    </div>
+  </div>
+</div>
+
+<script>
+  function showTab(id, btn) {
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    btn.classList.add('active');
+    if (id === 'kinematics') setTimeout(drawProjectile, 50);
+    if (id === 'forces') setTimeout(drawFBD, 50);
+    if (id === 'energy') setTimeout(() => drawEnergyBar(0, 0), 50);
+  }
+
+  function calcKinematics() {
+    const v0 = parseFloat(document.getElementById('k_v0').value) || 0;
+    const a = parseFloat(document.getElementById('k_a').value) || 0;
+    const t = parseFloat(document.getElementById('k_t').value) || 0;
+    const v = v0 + a * t;
+    const x = v0 * t + 0.5 * a * t * t;
+    const res = document.getElementById('k_result');
+    document.getElementById('k_result_val').textContent = 'v = ' + v.toFixed(2) + ' m/s     x = ' + x.toFixed(2) + ' m';
+    document.getElementById('k_result_step').textContent =
+      'v = v₀ + at  =  ' + v0 + ' + (' + a + ')(' + t + ')  =  ' + v.toFixed(2) + ' m/s\n' +
+      'x = v₀t + ½at²  =  ' + v0 + '(' + t + ') + 0.5(' + a + ')(' + t + ')²  =  ' + x.toFixed(2) + ' m';
+    res.classList.add('show');
+  }
+
+  function drawProjectile() {
+    const canvas = document.getElementById('proj_canvas');
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = 200 * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const W = rect.width, H = 200;
+
+    const v = parseFloat(document.getElementById('proj_v').value);
+    const deg = parseFloat(document.getElementById('proj_angle').value);
+    const rad = deg * Math.PI / 180;
+    document.getElementById('proj_v_out').textContent = v + ' m/s';
+    document.getElementById('proj_angle_out').textContent = deg + '°';
+    const g = 9.8;
+    const vx = v * Math.cos(rad), vy = v * Math.sin(rad);
+    const T = 2 * vy / g;
+    const R = vx * T;
+    const Hmax = (vy * vy) / (2 * g);
+    document.getElementById('proj_range').textContent = R.toFixed(1) + ' m';
+    document.getElementById('proj_height').textContent = Hmax.toFixed(1) + ' m';
+    document.getElementById('proj_time').textContent = T.toFixed(2) + ' s';
+
+    ctx.clearRect(0, 0, W, H);
+    const pad = 36, bw = W - 2 * pad, bh = H - pad - 24;
+
+    ctx.strokeStyle = 'rgba(0,0,0,0.08)';
+    ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(pad, pad); ctx.lineTo(pad, H - 24); ctx.lineTo(W - pad, H - 24); ctx.stroke();
+
+    ctx.fillStyle = '#888780';
+    ctx.font = '11px DM Sans, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('horizontal distance (m)', W / 2, H - 4);
+    ctx.save(); ctx.translate(12, H / 2); ctx.rotate(-Math.PI/2);
+    ctx.fillText('height (m)', 0, 0); ctx.restore();
+
+    ctx.beginPath();
+    ctx.strokeStyle = '#185FA5';
+    ctx.lineWidth = 2.5;
+    const steps = 100;
+    for (let i = 0; i <= steps; i++) {
+      const ti = (T * i) / steps;
+      const xi = vx * ti;
+      const yi = vy * ti - 0.5 * g * ti * ti;
+      const px = pad + (xi / R) * bw;
+      const py = H - 24 - (yi / (Hmax * 1.25)) * bh;
+      i === 0 ? ctx.moveTo(px, py) : ctx.lineTo(px, py);
+    }
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.arc(pad, H - 24, 6, 0, Math.PI * 2);
+    ctx.fillStyle = '#185FA5';
+    ctx.fill();
+
+    const peakX = pad + 0.5 * bw;
+    const peakY = H - 24 - (Hmax / (Hmax * 1.25)) * bh;
+    ctx.beginPath();
+    ctx.setLineDash([4, 4]);
+    ctx.strokeStyle = 'rgba(24,95,165,0.3)';
+    ctx.lineWidth = 1;
+    ctx.moveTo(peakX, peakY); ctx.lineTo(peakX, H - 24);
+    ctx.stroke();
+    ctx.setLineDash([]);
+  }
+
+  function calcForces() {
+    const m = parseFloat(document.getElementById('f_mass').value) || 1;
+    const F = parseFloat(document.getElementById('f_applied').value) || 0;
+    const mu = parseFloat(document.getElementById('f_mu').value) || 0;
+    const angleDeg = parseFloat(document.getElementById('f_angle').value) || 0;
+    const rad = angleDeg * Math.PI / 180;
+    const g = 9.8;
+    const W = m * g;
+    const N = W * Math.cos(rad);
+    const Ff = mu * N;
+    const Fnet = F - Ff - W * Math.sin(rad);
+    const a = Fnet / m;
+
+    document.getElementById('f_result_lines').innerHTML = `
+      <div class="result-grid">
+        <span class="label">Weight (mg)</span><span class="value">${W.toFixed(2)} N</span>
+        <span class="label">Normal force</span><span class="value">${N.toFixed(2)} N</span>
+        <span class="label">Friction (μN)</span><span class="value">${Ff.toFixed(2)} N</span>
+        <span class="label">Net force</span><span class="value">${Fnet.toFixed(2)} N</span>
+        <span class="label">Acceleration</span><span class="value">${a.toFixed(2)} m/s²</span>
+      </div>
+      <div class="result-formula">F_net = F_applied − F_friction − W·sinθ
+= ${F} − ${Ff.toFixed(2)} − ${(W*Math.sin(rad)).toFixed(2)} = ${Fnet.toFixed(2)} N
+a = F_net / m = ${Fnet.toFixed(2)} / ${m} = ${a.toFixed(2)} m/s²</div>`;
+    document.getElementById('f_result').classList.add('show');
+    drawFBD();
+  }
+
+  function drawFBD() {
+    const canvas = document.getElementById('fbd_canvas');
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = 220 * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const W = rect.width, H = 220;
+    ctx.clearRect(0, 0, W, H);
+
+    const cx = W / 2, cy = H / 2;
+    const boxSize = 44;
+
+    ctx.fillStyle = '#E6F1FB';
+    ctx.strokeStyle = '#185FA5';
+    ctx.lineWidth = 1.5;
+    ctx.beginPath();
+    ctx.roundRect(cx - boxSize/2, cy - boxSize/2, boxSize, boxSize, 8);
+    ctx.fill(); ctx.stroke();
+    ctx.fillStyle = '#185FA5';
+    ctx.font = '500 13px DM Sans, sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText('m', cx, cy + 5);
+
+    const arrow = (x1, y1, x2, y2, lbl, col) => {
+      const dx = x2-x1, dy = y2-y1, len = Math.sqrt(dx*dx+dy*dy);
+      const ux = dx/len, uy = dy/len, hw = 7, hl = 12;
+      ctx.strokeStyle = col; ctx.lineWidth = 2.5;
+      ctx.beginPath(); ctx.moveTo(x1, y1); ctx.lineTo(x2 - ux*hl, y2 - uy*hl); ctx.stroke();
+      ctx.fillStyle = col;
+      ctx.beginPath();
+      ctx.moveTo(x2, y2);
+      ctx.lineTo(x2 - hl*ux + hw*uy, y2 - hl*uy - hw*ux);
+      ctx.lineTo(x2 - hl*ux - hw*uy, y2 - hl*uy + hw*ux);
+      ctx.closePath(); ctx.fill();
+      ctx.font = '500 13px DM Sans, sans-serif';
+      ctx.fillStyle = col;
+      ctx.textAlign = 'center';
+      const off = 16;
+      ctx.fillText(lbl, x2 + uy*off, y2 - ux*off + 4);
+    };
+
+    const m = parseFloat(document.getElementById('f_mass').value)||10;
+    const F = parseFloat(document.getElementById('f_applied').value)||50;
+    const mu = parseFloat(document.getElementById('f_mu').value)||0.3;
+    const g = 9.8, N = m*g, Ff = mu*N;
+    const scaleF = 65 / Math.max(F, Ff, 1);
+
+    arrow(cx, cy, cx, cy - 72, 'N', '#0F6E56');
+    arrow(cx, cy, cx, cy + 72, 'W', '#D85A30');
+    arrow(cx, cy, cx + F * scaleF, cy, 'F', '#185FA5');
+    if (Ff > 0.5) arrow(cx, cy, cx - Ff * scaleF, cy, 'Ff', '#993C1D');
+  }
+
+  function calcEnergy() {
+    const m = parseFloat(document.getElementById('e_mass').value) || 1;
+    const v = parseFloat(document.getElementById('e_vel').value) || 0;
+    const h = parseFloat(document.getElementById('e_height').value) || 0;
+    const g = 9.8;
+    const KE = 0.5 * m * v * v;
+    const PE = m * g * h;
+    const E = KE + PE;
+
+    document.getElementById('e_result_lines').innerHTML = `
+      <div class="result-grid">
+        <span class="label">Kinetic energy (½mv²)</span><span class="value">${KE.toFixed(2)} J</span>
+        <span class="label">Potential energy (mgh)</span><span class="value">${PE.toFixed(2)} J</span>
+        <span class="label" style="font-weight:500;">Total mechanical energy</span><span class="value">${E.toFixed(2)} J</span>
+      </div>
+      <div class="result-formula">KE = ½(${m})(${v})² = ${KE.toFixed(2)} J
+PE = (${m})(9.8)(${h}) = ${PE.toFixed(2)} J</div>`;
+    document.getElementById('e_result').classList.add('show');
+    drawEnergyBar(KE, PE);
+  }
+
+  function drawEnergyBar(KE, PE) {
+    const canvas = document.getElementById('energy_canvas');
+    if (!canvas) return;
+    const rect = canvas.getBoundingClientRect();
+    const dpr = window.devicePixelRatio || 1;
+    canvas.width = rect.width * dpr;
+    canvas.height = 160 * dpr;
+    const ctx = canvas.getContext('2d');
+    ctx.scale(dpr, dpr);
+    const W = rect.width, H = 160;
+    ctx.clearRect(0, 0, W, H);
+
+    const total = (KE + PE) || 1;
+    const pad = 20, barH = 44, bw = W - 2*pad;
+    const keW = (KE / total) * bw;
+    const peW = (PE / total) * bw;
+
+    ctx.fillStyle = '#E6F1FB';
+    roundRect(ctx, pad, pad, keW, barH, [8, 0, 0, 8]);
+    ctx.fill();
+    ctx.fillStyle = '#EAF3DE';
+    roundRect(ctx, pad + keW, pad, peW, barH, [0, 8, 8, 0]);
+    ctx.fill();
+
+    ctx.font = '500 13px DM Sans, sans-serif';
+    if (keW > 50) {
+      ctx.fillStyle = '#0C447C';
+      ctx.textAlign = 'center';
+      ctx.fillText('KE', pad + keW/2, pad + barH/2 + 5);
+    }
+    if (peW > 50) {
+      ctx.fillStyle = '#27500A';
+      ctx.textAlign = 'center';
+      ctx.fillText('PE', pad + keW + peW/2, pad + barH/2 + 5);
+    }
+
+    ctx.font = '13px DM Sans, sans-serif';
+    ctx.fillStyle = '#6b6b66';
+    ctx.textAlign = 'left';
+    ctx.fillText('KE = ' + KE.toFixed(1) + ' J', pad, pad + barH + 22);
+    ctx.textAlign = 'right';
+    ctx.fillText('PE = ' + PE.toFixed(1) + ' J', W - pad, pad + barH + 22);
+    ctx.textAlign = 'center';
+    ctx.fillStyle = '#1a1a18';
+    ctx.font = '500 13px DM Sans, sans-serif';
+    ctx.fillText('Total = ' + (KE + PE).toFixed(1) + ' J', W/2, pad + barH + 44);
+  }
+
+  function roundRect(ctx, x, y, w, h, r) {
+    if (w === 0 || h === 0) return;
+    const [tl, tr, br, bl] = Array.isArray(r) ? r : [r,r,r,r];
+    ctx.beginPath();
+    ctx.moveTo(x + tl, y);
+    ctx.lineTo(x + w - tr, y); ctx.quadraticCurveTo(x+w, y, x+w, y+tr);
+    ctx.lineTo(x + w, y + h - br); ctx.quadraticCurveTo(x+w, y+h, x+w-br, y+h);
+    ctx.lineTo(x + bl, y + h); ctx.quadraticCurveTo(x, y+h, x, y+h-bl);
+    ctx.lineTo(x, y + tl); ctx.quadraticCurveTo(x, y, x+tl, y);
+    ctx.closePath();
+  }
+
+  window.addEventListener('load', () => {
+    drawProjectile();
+    drawFBD();
+  });
+
+  window.addEventListener('resize', () => {
+    const active = document.querySelector('.section.active');
+    if (!active) return;
+    if (active.id === 'kinematics') drawProjectile();
+    if (active.id === 'forces') drawFBD();
+  });
+</script>
+</body>
+</html>
